@@ -13,34 +13,35 @@ from pytz import timezone
 # Creates a post in posts and appends the link to the index.md file.
 
 
-now = datetime.now(tz=timezone('America/Denver'))
-default_title = now.strftime('**%a %H:%M** [*%d-%m-%Y*]')
+now = datetime.now(tz=timezone(f'America/Denver'))
+default_title = now.strftime(f"New-Post-[%a-%H:%M::%d-%m-%Y]")
 cwd = Path(os.getcwd())
-posts_dir = Path(f'{cwd}/docs/posts')
+posts_dir = Path(f"{cwd}/docs/posts")
 
-index = open(f'{cwd}/docs/index.md', 'w')
-header = open(f'{cwd}/template/header.md', 'r')
-footer = open(f'{cwd}/template/footer.md', 'r')
+
+header = open(f"{cwd}/docs/assets/templates/header.md", 'r')
+body = open(f"{cwd}/docs/assets/templates/body.md", 'a')
+footer = open(f"{cwd}/docs/assets/templates/footer.md", 'r')
+
+index = open(f"{cwd}/docs/index.md", 'w')
+index.write(f"{header.read()}")
+index.write(f"{footer.read()}")
+
 
 @click.command()
-@click.option('--title', default=default_title, help="Enter a post title")
+@click.option('--title', default=default_title, help='Enter post title text.')
+def post(title):
 
-def main(title):
+    post_dir_name = f"{title.replace(' ', '-')}"
+    os.makedirs(f"{posts_dir}/{post_dir_name}/images")
+    post_file = f"{posts_dir}/{post_dir_name}/{title.replace(' ', '-')}.md"
 
-    dir_name = now.strftime('%m-%d-%Y-%H-%M')
-    post_dir_name = f'{dir_name}-{title}'
-    os.makedirs(f'{posts_dir}/{post_dir_name}/images')
-    post_file = f'{posts_dir}/{post_dir_name}/{title}.md'
-
-    post = open(f'{post_file}', 'a')
-    post.write(f'{header.read()}')
-    post.write(f'## {title}\n')
-    post.write(f'__Description__\n\n\n---')
-    post.write(f'{footer.read()}')
-
-    file = header.read() + footer.read()
-    index.write(f'{file}')
+    post = open(f"{post_file}", 'a')
+    post.write(f"{header.read()}")
+    post.write(f"## {title}\n")
+    post.write(f"__Description__\n\n\n---")
+    post.write(f"{footer.read()}")
 
 
 if __name__ == '__main__':
-    main()
+    post()
