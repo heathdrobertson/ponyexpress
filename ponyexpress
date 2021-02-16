@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+
+import click
+import os
+
+from pathlib import Path
+from datetime import datetime
+from pytz import timezone
+
+
+now = datetime.now(tz=timezone(f'America/Denver'))
+default_title = now.strftime(f"New-Post-[%a-%H:%M|%d-%m-%Y]")
+cwd = Path(os.getcwd())
+posts_dir = Path(f"{cwd}/docs/posts")
+
+
+def update_index():
+    index = open(f"{cwd}/docs/index.md", 'w')
+    header = open(f"{cwd}/docs/assets/templates/index_header.md", 'r')
+    footer = open(f"{cwd}/docs/assets/templates/index_footer.md", 'r')
+
+    index.write(f"{header.read()}")
+    post_dirs = os.listdir(posts_dir)
+    print(posts_dir)
+    for i in post_dirs:
+
+        if os.path.isdir(f"{posts_dir}/{i}"):
+            index.write(f"- [{i}]({posts_dir}/{i}/{i}.md)\n")
+
+    index.write(f"{footer.read()}")
+
+
+@click.command()
+@click.option('--title', default=default_title, help='Enter post title text.')
+
+def post(title):
+
+    full_title = now.strftime(f"[%a-%H:%M|%d-%m-%Y]-{title.replace(' ', '-')}")
+    post_dir_name = f"{full_title}"
+    os.makedirs(f"{posts_dir}/{post_dir_name}/images")
+    post_file = f"{posts_dir}/{post_dir_name}/{full_title}.md"
+
+    post = open(f"{post_file}", 'a')
+    header = open(f"{cwd}/docs/assets/templates/post_header.md", 'r')
+    footer = open(f"{cwd}/docs/assets/templates/post_footer.md", 'r')
+
+    post.write(f"{header.read()}")
+    post.write(f"## {title}\n")
+    post.write(f"**{now.strftime('%a-%H:%M%p %d-%m-%Y')}**\n\n")
+    post.write(f"__Description__\n\n\n---")
+    post.write(f"{footer.read()}")
+
+    update_index()
+
+
+if __name__=='__main__':
+    post()
